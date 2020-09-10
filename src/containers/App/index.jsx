@@ -35,6 +35,7 @@ export const App = () => {
         />
         <Route
           component={Main}
+          exact
           path="/"
         />
         <Redirect

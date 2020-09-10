@@ -12,6 +12,7 @@ export const uiReducer = (state = initialState, action) => {
         ...state,
         isOnline: action.payload,
       };
+
     default:
       return state;
   }

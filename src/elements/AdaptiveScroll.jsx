@@ -21,10 +21,10 @@ const ScrollContainer = styled.section`
 
     if (disableOnMobile) {
       return css`
-                @media (min-width: 1024px) {
-                    ${stylesResult};
-                }
-            `;
+        @media (min-width: 1024px) {
+            ${stylesResult};
+        }
+      `;
     }
 
     return stylesResult;
