@@ -1,72 +1,53 @@
 // Core
-import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-
-// Redux
-import { useSelectorUi } from '../ui';
-import { useTogglers } from '../togglers';
+import { useQuery, useMutation, queryCache } from 'react-query';
 
 // Api
 import {
-  getTodosAsync, createTodoAsync, updateTodoAsync, deleteTodoAsync,
+  fetchTodos, createTodo, updateTodo, deleteTodo,
 } from './api';
 
-// Actions
-import {
-  setTodosAction, setTodoAction, updateTodoAction, deleteTodoAction,
-} from './actions';
-
-const useSelectorTodos = () => useSelector(({ todos }) => todos);
-
 export const useTodosQuery = () => {
-  const dispatch = useDispatch();
-  const { togglers, setTogglerAction } = useTogglers();
-  const { isOnline } = useSelectorUi();
-
-  useEffect(() => {
-    if (isOnline) {
-      getTodosAsync({
-        setTodos: (todos) => void dispatch(setTodosAction(todos)),
-        loadingAction: (value) => void setTogglerAction({ type: 'isTodosLoading', value }),
-      });
-    }
-  }, [isOnline]);  // eslint-disable-line
-
-  return {
-    data: useSelectorTodos(),
-    loading: togglers.isTodosLoading,
-  };
+  return useQuery('todos', fetchTodos);
 };
 
-export const useTodosMutations = () => {
-  const dispatch = useDispatch();
-  const { togglers, setTogglerAction } = useTogglers();
-  const { isOnline } = useSelectorUi();
-  const loadingAction = (value) => void setTogglerAction({ type: 'isTodosLoading', value });
+export const useCreateTodo = () => {
+  return useMutation((body) => createTodo(body), {
+    onSuccess: (createdTodo) => {
+      const previousTodos = queryCache.getQueryData('todos');
 
-  const createMutation = async (body) => isOnline && void createTodoAsync({
-    body,
-    setTodo: (newTodo) => void dispatch(setTodoAction(newTodo)),
-    loadingAction,
+      queryCache.setQueryData('todos', () => [createdTodo, ...previousTodos]);
+    },
   });
+};
 
-  const updateMutation = async (body, todoId) => isOnline && void updateTodoAsync({
-    todoId,
-    body,
-    updateTodo: (newTodo) => void dispatch(updateTodoAction(newTodo)),
-    loadingAction,
+export const useUpdateTodo = () => {
+  return useMutation((options) => updateTodo(options), {
+    onSuccess: (updatedTodo) => {
+      const previousTodos = queryCache.getQueryData('todos');
+
+      queryCache.setQueryData('todos', () => previousTodos.map((todo) => {
+        if (todo.id === updatedTodo.id) {
+          return updatedTodo;
+        }
+
+        return todo;
+      }));
+    },
   });
+};
 
-  const deleteMutation = async (todoId) => isOnline && void deleteTodoAsync({
-    todoId,
-    deleteTodo: (newTodo) => void dispatch(deleteTodoAction(newTodo)),
-    loadingAction,
+export const useDeleteTodo = () => {
+  return useMutation((todoId) => deleteTodo(todoId), {
+    onSuccess: (isTodoDeleted, todoId) => {
+      if (!isTodoDeleted) {
+        throw new Error('Todo delete failed.');
+      }
+
+      const previousTodos = queryCache.getQueryData('todos');
+
+      queryCache.setQueryData('todos', () => previousTodos.filter(
+        (todo) => todo.id !== todoId),
+      );
+    },
   });
-
-  return {
-    createMutation,
-    updateMutation,
-    deleteMutation,
-    loading: togglers.isTodosLoading,
-  };
 };

@@ -27,7 +27,9 @@ export const App = () => {
   return (
     <Container>
       <GlobalReset />
-      <Header isOnline={isOnline} />
+      <Header
+        isOnline={isOnline}
+      />
       <Switch>
         <Route
           component={Info}
