@@ -5,6 +5,9 @@ import { Switch, Route, Redirect } from 'react-router-dom';
 // Redux
 import { useUi } from '../../bus/ui';
 
+// React Query
+import { ReactQueryDevtools } from 'react-query-devtools';
+
 // Pages
 import { Main, Info } from '../../pages'; // eslint-disable-line import/no-cycle
 
@@ -25,24 +28,27 @@ export const App = () => {
   }, []); // eslint-disable-line
 
   return (
-    <Container>
-      <GlobalReset />
-      <Header isOnline={isOnline} />
-      <Switch>
-        <Route
-          component={Info}
-          path="/info"
-        />
-        <Route
-          component={Main}
-          exact
-          path="/"
-        />
-        <Redirect
-          component={Main}
-          to="/"
-        />
-      </Switch>
-    </Container>
+    <>
+      <Container>
+        <GlobalReset />
+        <Header isOnline={isOnline} />
+        <Switch>
+          <Route
+            component={Info}
+            path="/info"
+          />
+          <Route
+            component={Main}
+            exact
+            path="/"
+          />
+          <Redirect
+            component={Main}
+            to="/"
+          />
+        </Switch>
+      </Container>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </>
   );
 };

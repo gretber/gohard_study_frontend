@@ -7,8 +7,8 @@ import { Modal, Todo } from '../../components';
 // Elements
 import { AdaptiveScroll, Button } from '../../elements';
 
-// Redux
-import { useTodosQuery, useTodosMutations } from '../../bus/todos';
+// React Query
+import { useTodosMutations } from '../../bus/todos';
 
 // Styles
 import { Header, Footer } from './styles';
@@ -16,8 +16,10 @@ import { Header, Footer } from './styles';
 export const TodoModal = ({ closeHandler }) => {
   const headerRef = useRef(null);
   const footerRef = useRef(null);
-  const { data/* , loading */ } = useTodosQuery();
-  const { updateMutation, deleteMutation } = useTodosMutations();
+  const {
+    data, status, 
+    updateTodo, deleteTodo 
+  } = useTodosMutations();
 
   return (
     <Modal closeHandler={closeHandler}>
@@ -30,15 +32,29 @@ export const TodoModal = ({ closeHandler }) => {
         refs={[headerRef, footerRef]}
       >
         {
-          data.map((todo, index) => (
-            <Todo
-              key={todo.id}
-              isColor={Boolean(index % 2)}
-              {...todo}
-              deleteHandler={() => void deleteMutation(todo.id)}
-              updateHandler={() => void updateMutation({ isCompleted: !todo.isCompleted }, todo.id)}
-            />
-          ))
+          status === 'loading' && (
+            <div>Loading...</div>
+          )
+        }
+
+        {
+          status === 'error' && (
+            <div>Error fetching data.</div>
+          )
+        }
+
+        { 
+          status === 'success' && (
+            data.map((todo, index) => (
+              <Todo
+                key={todo.id}
+                isColor={Boolean(index % 2)}
+                {...todo}
+                deleteHandler={() => void deleteTodo(todo.id)}
+                updateHandler={() => void updateTodo([{ isCompleted: !todo.isCompleted }, todo.id])}
+              />
+            ))
+          )
         }
       </AdaptiveScroll>
       <Footer ref={footerRef}>

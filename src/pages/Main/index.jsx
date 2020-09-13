@@ -6,24 +6,22 @@ import { Todo } from '../../components';
 // Elements
 import { Button } from '../../elements';
 
-// Redux
-import { useTodosQuery, useTodosMutations } from '../../bus/todos';
+// React Query
+import { useTodosMutations } from '../../bus/todos';
 
 // Styles
 import { Header } from './styles';
 
 export const Main = () => {
   const [text, setText] = useState('');
-  const { data } = useTodosQuery();
-  const { createMutation, updateMutation, deleteMutation } = useTodosMutations();
-
-  if (!data) {
-    return <div>Loading...</div>;
-  }
+  const {
+    data, status, 
+    addTodo, updateTodo, deleteTodo 
+  } = useTodosMutations();
 
   const onCreate = () => {
     if (text !== '') {
-      createMutation({ text });
+      addTodo({ text });
       setText('');
     }
   };
@@ -39,15 +37,29 @@ export const Main = () => {
       </Header>
       <main>
         {
-          data.map((todo, index) => (
-            <Todo
-              key={todo.id}
-              isColor={Boolean(index % 2)}
-              {...todo}
-              deleteHandler={() => void deleteMutation(todo.id)}
-              updateHandler={() => void updateMutation({ isCompleted: !todo.isCompleted }, todo.id)}
-            />
-          ))
+          status === 'loading' && (
+            <div>Loading...</div>
+          )
+        }
+
+        {
+          status === 'error' && (
+            <div>Error fetching data.</div>
+          )
+        }
+
+        {
+          status === 'success' && (
+            data.map((todo, index) => (
+              <Todo
+                key={todo.id}
+                isColor={Boolean(index % 2)}
+                {...todo}
+                deleteHandler={() => void deleteTodo(todo.id)}
+                updateHandler={() => void updateTodo([{ isCompleted: !todo.isCompleted }, todo.id])}
+              />
+            ))
+          )
         }
       </main>
     </section>

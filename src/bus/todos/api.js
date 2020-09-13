@@ -1,7 +1,6 @@
 const todosUrl = `${process.env.REACT_APP_API_URL}/todos`;
 
-export const getTodosAsync = async ({ setTodos, loadingAction }) => {
-  loadingAction(true);
+export const getTodosAsync = async () => {
 
   try {
     const response = await fetch(todosUrl, {
@@ -15,18 +14,14 @@ export const getTodosAsync = async ({ setTodos, loadingAction }) => {
       throw new Error('Todos fetch failed');
     }
 
-    const data = await response.json();
+    return response.json();
 
-    setTodos(data);
   } catch (error) {
     console.log(error);
-  } finally {
-    loadingAction(false);
-  }
+  } 
 };
 
-export const createTodoAsync = async ({ body, setTodo, loadingAction }) => {
-  loadingAction(true);
+export const createTodoAsync = async (body) => {
 
   try {
     const response = await fetch(todosUrl, {
@@ -42,20 +37,12 @@ export const createTodoAsync = async ({ body, setTodo, loadingAction }) => {
       throw new Error('Todo create failed');
     }
 
-    const data = await response.json();
-
-    setTodo(data);
   } catch (error) {
     console.log(error);
-  } finally {
-    loadingAction(false);
-  }
+  } 
 };
 
-export const updateTodoAsync = async ({
-  todoId, body, updateTodo, loadingAction,
-}) => {
-  loadingAction(true);
+export const updateTodoAsync = async ([ body, todoId ]) => {
 
   try {
     const response = await fetch(`${todosUrl}/${todoId}`, {
@@ -71,20 +58,12 @@ export const updateTodoAsync = async ({
       throw new Error('Todo update failed');
     }
 
-    const data = await response.json();
-
-    updateTodo(data);
   } catch (error) {
     console.log(error);
-  } finally {
-    loadingAction(false);
   }
 };
 
-export const deleteTodoAsync = async ({
-  todoId, deleteTodo, loadingAction,
-}) => {
-  loadingAction(true);
+export const deleteTodoAsync = async (todoId) => {
 
   try {
     const response = await fetch(`${todosUrl}/${todoId}`, {
@@ -99,14 +78,7 @@ export const deleteTodoAsync = async ({
       throw new Error('Todo delete failed');
     }
 
-    const data = await response.json();
-
-    if (data) {
-      deleteTodo(todoId);
-    }
   } catch (error) {
     console.log(error);
-  } finally {
-    loadingAction(false);
   }
 };
