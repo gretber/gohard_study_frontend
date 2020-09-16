@@ -7,16 +7,17 @@ import { Todo } from '../../components';
 import { Button } from '../../elements';
 
 // React Query
-import { useTodosMutations } from '../../bus/todos';
+import { useTodosQuery, useTodosMutations } from '../../bus/todos';
 
 // Styles
 import { Header } from './styles';
 
 export const Main = () => {
   const [text, setText] = useState('');
-  const {
-    data, status, 
-    addTodo, updateTodo, deleteTodo 
+  const { data, status } = useTodosQuery();
+  const { 
+    addTodo, updateTodo, 
+    deleteTodo, isLoading 
   } = useTodosMutations();
 
   const onCreate = () => {
@@ -37,7 +38,7 @@ export const Main = () => {
       </Header>
       <main>
         {
-          status === 'loading' && (
+          (status === 'loading' || isLoading) && (
             <div>Loading...</div>
           )
         }

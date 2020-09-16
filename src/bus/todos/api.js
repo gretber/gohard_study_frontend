@@ -36,6 +36,8 @@ export const createTodoAsync = async (body) => {
     if (response.status !== 201) {
       throw new Error('Todo create failed');
     }
+    
+    return response.json();
 
   } catch (error) {
     console.log(error);
@@ -58,6 +60,8 @@ export const updateTodoAsync = async ([ body, todoId ]) => {
       throw new Error('Todo update failed');
     }
 
+    return response.json();
+
   } catch (error) {
     console.log(error);
   }
@@ -77,6 +81,8 @@ export const deleteTodoAsync = async (todoId) => {
     if (response.status !== 200) {
       throw new Error('Todo delete failed');
     }
+
+    return response.json();
 
   } catch (error) {
     console.log(error);

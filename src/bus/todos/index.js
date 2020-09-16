@@ -6,37 +6,55 @@ import {
   getTodosAsync, createTodoAsync, updateTodoAsync, deleteTodoAsync,
 } from './api';
 
-export function useTodosMutations() {
-  // Queries
-  const { data, status } = useQuery('todos', getTodosAsync)
+// Queries
+export const useTodosQuery = () => {
+  return useQuery('todos', getTodosAsync)
+}
 
-  // Mutations
-  const [addTodo] = useMutation(createTodoAsync, {
-    onSuccess: () => {
-      // Query Invalidations
-      queryCache.invalidateQueries('todos')
+// Mutations
+export function useTodosMutations() {
+
+  const [addTodo, { isLoading: isLoadingAddTodo }] = useMutation((body) => createTodoAsync(body), {
+
+    onSuccess: (createdTodo) => {
+       const previousTodos = queryCache.getQueryData('todos');
+       queryCache.setQueryData('todos', [...previousTodos, createdTodo]);
     },
   });
   
-  const [updateTodo] = useMutation(updateTodoAsync, {
-    onSuccess: () => {
-      // Query Invalidations
-      queryCache.invalidateQueries('todos')
+  const [updateTodo, { isLoading: isLoadingUpdateTodo }] = useMutation(updateTodoAsync, {
+    onSuccess: (updatedTodo) => {
+      const previousTodos = queryCache.getQueryData('todos');
+      queryCache.setQueryData('todos', () => previousTodos.map((todo) => {
+        if (todo.id === updatedTodo.id) {
+          return updatedTodo;
+        }
+
+        return todo;
+      }));
+    }
+  });
+
+  const [deleteTodo, { isLoading: isLoadingDeleteTodo }] = useMutation(deleteTodoAsync, {
+    onSuccess: (isTodoDeleted, todoId) => {
+      if (!isTodoDeleted) {
+        throw new Error('Todo delete failed.');
+      }
+      const previousTodos = queryCache.getQueryData('todos');
+      queryCache.setQueryData('todos', () => previousTodos.filter(
+        (todo) => todo.id !== todoId),
+      );
     },
   });
 
-  const [deleteTodo] = useMutation(deleteTodoAsync, {
-    onSuccess: () => {
-      // Query Invalidations
-      queryCache.invalidateQueries('todos')
-    },
-  });
+  const isLoading = isLoadingAddTodo || 
+                    isLoadingUpdateTodo ||
+                    isLoadingDeleteTodo
 
   return {
-    data, 
-    status,
     addTodo,
     updateTodo,
     deleteTodo,
+    isLoading,
   }
 }
